@@ -35,3 +35,9 @@ declare class Worksheet {
     getSelection(): GSelection;
 }
 declare const HtmlService: HtmlService;
+interface GoogleContext {
+    SpreadsheetApp: SpreadSheetApp;
+}
+declare const GoogleSheet: {
+    run(code: (context: GoogleContext) => void): void;
+};

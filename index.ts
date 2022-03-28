@@ -75,4 +75,16 @@ const HtmlService: HtmlService = {
     }
 }
 
+interface GoogleContext {
+    SpreadsheetApp: SpreadSheetApp
+}
+
+
+const GoogleSheet = {
+    run(code: (context: GoogleContext) => void) {
+        Excel.run(async (c) => {
+            code({ SpreadsheetApp: new SpreadSheetApp(c) })
+        })
+    }
+}
 
