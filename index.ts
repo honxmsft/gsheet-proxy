@@ -88,3 +88,5 @@ var GoogleSheet = {
     }
 }
 
+window.HtmlService = HtmlService
+window.GoogleSheet = GoogleSheet
