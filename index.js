@@ -83,3 +83,5 @@ var GoogleSheet = {
 };
 window.HtmlService = HtmlService;
 window.GoogleSheet = GoogleSheet;
+console.log('hello');
+console.log(HtmlService);
