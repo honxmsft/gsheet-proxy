@@ -34,10 +34,10 @@ declare class Worksheet {
     getRange(address: string): GRange;
     getSelection(): GSelection;
 }
-declare const HtmlService: HtmlService;
+declare var HtmlService: HtmlService;
 interface GoogleContext {
     SpreadsheetApp: SpreadSheetApp;
 }
-declare const GoogleSheet: {
+declare var GoogleSheet: {
     run(code: (context: GoogleContext) => void): void;
 };

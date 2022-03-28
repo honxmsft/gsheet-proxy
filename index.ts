@@ -69,7 +69,7 @@ class Worksheet {
 }
 
 
-const HtmlService: HtmlService = {
+var HtmlService: HtmlService = {
     createHtmlOutput(): HtmlOutput {
         return new HtmlOutput()
     }
@@ -80,7 +80,7 @@ interface GoogleContext {
 }
 
 
-const GoogleSheet = {
+var GoogleSheet = {
     run(code: (context: GoogleContext) => void) {
         Excel.run(async (c) => {
             code({ SpreadsheetApp: new SpreadSheetApp(c) })
