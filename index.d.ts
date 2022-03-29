@@ -1,6 +1,6 @@
 declare class SpreadSheetApp {
-    readonly context: Excel.RequestContext;
-    constructor(context: Excel.RequestContext);
+    readonly context: () => Excel.RequestContext;
+    constructor(context: () => Excel.RequestContext);
     getActive(): Worksheet;
     getUi(): UI;
 }
@@ -17,27 +17,25 @@ declare class HtmlOutput {
 }
 declare class GRange {
     private range;
-    constructor(range: Excel.Range);
+    constructor(range: () => Excel.Range);
     setValue(value: any): void;
     setBackground(bg: string): void;
     merge(): void;
 }
 declare class GSelection {
     private workbook;
-    constructor(workbook: Excel.Workbook);
+    constructor(workbook: () => Excel.Workbook);
     getActiveRange(): GRange;
 }
 declare class Worksheet {
     private workbook;
     private worksheet;
-    constructor(workbook: Excel.Workbook, worksheet: Excel.Worksheet);
+    constructor(workbook: () => Excel.Workbook, worksheet: () => Excel.Worksheet);
     getRange(address: string): GRange;
     getSelection(): GSelection;
 }
 declare var HtmlService: HtmlService;
-interface GoogleContext {
-    SpreadsheetApp: SpreadSheetApp;
-}
-declare var GoogleSheet: {
-    run(code: (context: GoogleContext) => void): void;
-};
+declare var context: Excel.RequestContext;
+declare let _resolve: any;
+declare var promise: Promise<unknown>;
+declare var SpreadsheetApp: SpreadSheetApp;

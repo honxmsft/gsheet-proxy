@@ -10,9 +10,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 class SpreadSheetApp {
     constructor(context) {
         this.context = context;
+        console.log("context");
+        console.log(context);
     }
     getActive() {
-        return new Worksheet(this.context.workbook, this.context.workbook.worksheets.getActiveWorksheet());
+        console.log("get active");
+        console.log(this.context);
+        return new Worksheet(() => this.context().workbook, () => this.context().workbook.worksheets.getActiveWorksheet());
     }
     getUi() {
         return new UI();
@@ -32,7 +36,7 @@ class HtmlOutput {
         return this;
     }
     getContent() {
-        return this.contents.join('\n');
+        return this.contents.join("\n");
     }
 }
 class GRange {
@@ -40,13 +44,16 @@ class GRange {
         this.range = range;
     }
     setValue(value) {
-        this.range.values = value;
+        this.range().values = value;
+        this.range().context.sync();
     }
     setBackground(bg) {
-        this.range.format.fill.color = bg;
+        this.range().format.fill.color = bg;
+        this.range().context.sync();
     }
     merge() {
-        this.range.merge();
+        this.range().merge();
+        this.range().context.sync();
     }
 }
 class GSelection {
@@ -54,7 +61,7 @@ class GSelection {
         this.workbook = workbook;
     }
     getActiveRange() {
-        return new GRange(this.workbook.getSelectedRange());
+        return new GRange(() => this.workbook().getSelectedRange());
     }
 }
 class Worksheet {
@@ -63,7 +70,7 @@ class Worksheet {
         this.worksheet = worksheet;
     }
     getRange(address) {
-        return new GRange(this.worksheet.getRange(address));
+        return new GRange(() => this.worksheet().getRange(address));
     }
     getSelection() {
         return new GSelection(this.workbook);
@@ -74,14 +81,23 @@ var HtmlService = {
         return new HtmlOutput();
     }
 };
-var GoogleSheet = {
-    run(code) {
-        Excel.run((c) => __awaiter(this, void 0, void 0, function* () {
-            code({ SpreadsheetApp: new SpreadSheetApp(c) });
-        }));
-    }
-};
 window.HtmlService = HtmlService;
-window.GoogleSheet = GoogleSheet;
-console.log('hello');
-console.log(HtmlService);
+var context;
+let _resolve;
+var promise = new Promise((resolve) => {
+    _resolve = resolve;
+});
+Excel.run((c) => __awaiter(this, void 0, void 0, function* () {
+    context = c;
+    console.log("start");
+    yield promise;
+    console.log("end");
+}));
+var SpreadsheetApp = new SpreadSheetApp(() => context);
+Object.assign(window, {
+    google: {
+        script: {
+            run: window
+        }
+    }
+});
