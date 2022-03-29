@@ -10,12 +10,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 class SpreadSheetApp {
     constructor(context) {
         this.context = context;
-        console.log("context");
-        console.log(context);
     }
     getActive() {
-        console.log("get active");
-        console.log(this.context);
         return new Worksheet(() => this.context().workbook, () => this.context().workbook.worksheets.getActiveWorksheet());
     }
     getUi() {
@@ -89,9 +85,7 @@ var promise = new Promise((resolve) => {
 });
 Excel.run((c) => __awaiter(this, void 0, void 0, function* () {
     context = c;
-    console.log("start");
     yield promise;
-    console.log("end");
 }));
 var SpreadsheetApp = new SpreadSheetApp(() => context);
 Object.assign(window, {

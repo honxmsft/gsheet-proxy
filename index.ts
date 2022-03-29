@@ -1,12 +1,8 @@
 class SpreadSheetApp {
     constructor(readonly context: () => Excel.RequestContext) {
-        console.log("context");
-        console.log(context);
     }
 
     getActive(): Worksheet {
-        console.log("get active");
-        console.log(this.context);
         return new Worksheet(
             () => this.context().workbook,
             () => this.context().workbook.worksheets.getActiveWorksheet()
@@ -94,9 +90,7 @@ var promise = new Promise((resolve) => {
 });
 Excel.run(async (c) => {
     context = c;
-    console.log("start");
     await promise;
-    console.log("end");
 });
 var SpreadsheetApp = new SpreadSheetApp(() => context);
 Object.assign(window, {
