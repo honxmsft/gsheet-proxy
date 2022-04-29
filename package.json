@@ -1,14 +1,43 @@
 {
-  "name": "gsheet-proxy",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "build": "tsc -p ./tsconfig.json"
+  "name": "fission2",
+  "private": "true",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/OfficeDev/Office-Addin-TaskPane-JS.git"
   },
-  "author": "",
-  "license": "ISC",
+  "config": {
+    "app-to-debug": "excel",
+    "app-type-to-debug": "web",
+    "dev-server-port": 3000
+  },
+  "scripts": {
+    "build": "vite build",
+    "dev": "esno dev.ts",
+    "lint": "office-addin-lint check",
+    "lint:fix": "office-addin-lint fix",
+    "prettier": "office-addin-lint prettier",
+    "start": "office-addin-debugging start manifest.xml",
+    "start:desktop": "office-addin-debugging start manifest.xml desktop",
+    "start:web": "office-addin-debugging start manifest.xml web --document https://microsoft-my.sharepoint.com/:x:/p/honx/EbbVp2thw45EnX328JoXCwEB7AjnHDHTVwDRpE4vQSLrJg?e=VW1bz3",
+    "stop": "office-addin-debugging stop manifest.xml",
+    "validate": "office-addin-manifest validate manifest.xml"
+  },
   "devDependencies": {
-    "typescript": "^4.6.3"
+    "@types/jquery": "^3.5.6",
+    "esno": "^0.14.1",
+    "office-addin-cli": "^1.2.2",
+    "office-addin-debugging": "^4.2.2",
+    "office-addin-dev-certs": "^1.7.8",
+    "office-addin-lint": "^1.3.2",
+    "office-addin-manifest": "1.6.2",
+    "office-addin-prettier-config": "^1.1.0",
+    "office-script-synchronous": "0.0.92",
+    "typescript": "4.0.3",
+    "vite": "^2.9.6"
+  },
+  "prettier": "office-addin-prettier-config",
+  "dependencies": {
+    "@types/node": "^17.0.29",
+    "monaco-editor": "^0.26.1"
   }
 }
