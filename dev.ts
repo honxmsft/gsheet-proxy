@@ -12,26 +12,6 @@ async function startVite() {
     server.printUrls()
 }
 
-async function startWatchLibraries() {
-    await new Promise<void>((resolve, reject) => {
-        const process = spawn(join('node_modules', '.bin', 'tsc.CMD'), ['-w', '--project', join(__dirname, 'libs', 'tsconfig.json')])
-        process.on('spawn', () => {
-            resolve()
-        })
-        process.on('exit', (code) => {
-            if (code !== 0) {
-                reject(new Error(`tsc error code: ${code}`))
-            }
-        })
-        process.on('error', (e) => {
-            reject(e)
-        })
-    })
-    // const host = createWatchCompilerHost(join(__dirname, 'tsconfig.json'))
-    // const program = createWatchProgram(host)
-    // console.log('Started typescript watch')
-}
-
 async function startExcel() {
     const manifestPath = join(__dirname, 'public', 'manifest.xml')
     console.log(`Use manifest: ${manifestPath} to start office`)
@@ -45,7 +25,6 @@ async function startExcel() {
 
 async function main() {
     await startVite()
-    await startWatchLibraries()
     await startExcel()
 }
 
