@@ -1,6 +1,13 @@
 
-class SpreadSheetApp {
+class SpreadSheetAppImpl {
     constructor(readonly workbook: ExcelScript.Workbook) {
+    }
+
+    getActiveSpreadsheet(): Worksheet {
+        return new Worksheet(
+            this.workbook,
+            this.workbook.getActiveWorksheet()
+        );
     }
 
     getActive(): Worksheet {
@@ -12,6 +19,11 @@ class SpreadSheetApp {
     getUi(): UI {
         return new UI();
     }
+
+}
+
+class UiAppImpl {
+
 }
 
 interface HtmlService {
@@ -84,7 +96,37 @@ var HtmlService: HtmlService = {
 };
 
 // @ts-ignore
-const SpreadsheetApp = new SpreadSheetApp(workbook || window.workbook);
+const SpreadsheetApp = new SpreadSheetAppImpl(workbook || window.workbook);
+
+
+interface UiLabel {
+
+}
+
+interface UiTextArea {
+
+}
+interface UiApp {
+    setHeight(x: string | number): this
+    setWidth(x: string | number): this
+    setTitle(s: string): this
+
+    createLabel(label: string): UiLabel
+    createTextArea(): UiTextArea
+
+    createVerticalPanel(): UiVerticalPanel
+}
+
+interface UiVerticalPanel {
+    setWidth(v: string | number): this
+    setHeight(v: string | number): this
+}
+
+class UiApp {
+    static createApplication(): UiApp {
+
+    }
+}
 
 Object.assign(window, {
     HtmlService,

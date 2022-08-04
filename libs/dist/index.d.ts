@@ -1,8 +1,11 @@
-declare class SpreadSheetApp {
+declare class SpreadSheetAppImpl {
     readonly workbook: ExcelScript.Workbook;
     constructor(workbook: ExcelScript.Workbook);
+    getActiveSpreadsheet(): Worksheet;
     getActive(): Worksheet;
     getUi(): UI;
+}
+declare class UiAppImpl {
 }
 interface HtmlService {
     createHtmlOutput(): HtmlOutput;
@@ -36,4 +39,23 @@ declare class Worksheet {
     getSelection(): GSelection;
 }
 declare var HtmlService: HtmlService;
-declare const SpreadsheetApp: SpreadSheetApp;
+declare const SpreadsheetApp: SpreadSheetAppImpl;
+interface UiLabel {
+}
+interface UiTextArea {
+}
+interface UiApp {
+    setHeight(x: string | number): this;
+    setWidth(x: string | number): this;
+    setTitle(s: string): this;
+    createLabel(label: string): UiLabel;
+    createTextArea(): UiTextArea;
+    createVerticalPanel(): UiVerticalPanel;
+}
+interface UiVerticalPanel {
+    setWidth(v: string | number): this;
+    setHeight(v: string | number): this;
+}
+declare class UiApp {
+    static createApplication(): UiApp;
+}

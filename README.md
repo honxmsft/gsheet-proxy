@@ -1,11 +1,11 @@
-# Fission 2
+# Addin Template
 
 ## Getting Started
 
 Authenticate the internal package registry
 
 ```bash
-pnpx vsts-npm-auth -config .npmrc
+npx vsts-npm-auth -config .npmrc
 ```
 
 Install dependencies

@@ -1,7 +1,10 @@
 "use strict";
-class SpreadSheetApp {
+class SpreadSheetAppImpl {
     constructor(workbook) {
         this.workbook = workbook;
+    }
+    getActiveSpreadsheet() {
+        return new Worksheet(this.workbook, this.workbook.getActiveWorksheet());
     }
     getActive() {
         return new Worksheet(this.workbook, this.workbook.getActiveWorksheet());
@@ -9,6 +12,8 @@ class SpreadSheetApp {
     getUi() {
         return new UI();
     }
+}
+class UiAppImpl {
 }
 class UI {
     showSidebar(html) {
@@ -70,7 +75,11 @@ var HtmlService = {
     }
 };
 // @ts-ignore
-const SpreadsheetApp = new SpreadSheetApp(workbook || window.workbook);
+const SpreadsheetApp = new SpreadSheetAppImpl(workbook || window.workbook);
+class UiApp {
+    static createApplication() {
+    }
+}
 Object.assign(window, {
     HtmlService,
     google: {

@@ -9,7 +9,7 @@
 // import "../../assets/icon-80.png";
 
 // preload
-import { transformSynchronousCodeForBatchExecution, library } from 'office-script-synchronous'
+import { transformSynchronousCodeForBatchExecution, transformSynchronousCodeForBatchExecutionLegacy, library } from 'office-script-synchronous'
 
 /* global console, document, Excel, Office */
 import { getEditor } from './editor';
@@ -37,7 +37,7 @@ function getSetSupport(
 }
 
 async function transpileGoogle(content: string) {
-  const output = await transformSynchronousCodeForBatchExecution(content, compileCode, {
+  const output = await transformSynchronousCodeForBatchExecutionLegacy(content, compileCode, {
     getSetSupport,
     logger: {
       log(message) {
