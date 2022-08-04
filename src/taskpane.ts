@@ -9,66 +9,11 @@
 // import "../../assets/icon-80.png";
 
 // preload
-import { transformSynchronousCodeForBatchExecution, transformSynchronousCodeForBatchExecutionLegacy, library } from 'office-script-synchronous'
-
-/* global console, document, Excel, Office */
-import { getEditor } from './editor';
-import { compileAndGenMock } from './inference';
-
-// TODO: move to iframe?
-import preload from '../libs/index?raw'
-import appScript from '../sample/index?raw'
-import { compileCode } from './compileCode';
-const scriptDynamic = document.getElementById('dynamic')!;
-
-function getSetSupport(
-  sets: { name: string; version: string }[],
-): { name: string; version: string; support: boolean }[] {
-  const supportedSets = sets.map(({ name, version }) => {
-    const support = Office.context.requirements.isSetSupported(name, version);
-    return {
-      name,
-      version,
-      support,
-    };
-  });
-
-  return supportedSets;
-}
-
-async function transpileGoogle(content: string) {
-  const output = await transformSynchronousCodeForBatchExecutionLegacy(content, compileCode, {
-    getSetSupport,
-    logger: {
-      log(message) {
-        console.log(`DEBUG: ${message}`)
-      }
-    },
-    scan: true,
-  })
-  const result = output.outputText!.replace(`"use strict"`, '')
-  console.log(result)
-  // load excel script
-  // window.ExcelScript = library
-  // load main
-  scriptDynamic.innerHTML = `${result}; window.main = main`
-  // call code
-  await Excel.run(async (ctx) => {
-    await window.main(ctx)
-    // await new Promise((resolve) => {
-
-    // })
-  })
-}
-
 Office.onReady(async (info) => {
   if (info.host === Office.HostType.Excel) {
-    transpileGoogle(`
-    function main(workbook: ExcelScript.Workbook) {
-      ${preload}
-      ${appScript}
-    }
-    `)
+    Excel.run(async (context) => {
+      console.log('hello')
+    })
   }
 });
 
