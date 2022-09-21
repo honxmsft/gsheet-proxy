@@ -53,6 +53,22 @@
                     <SourceLocation resid="Taskpane.Url"/>
                   </Action>
                 </Control>
+                <!-- <Control xsi:type="Button" id="FormsTaskpaneButton">
+                  <Label resid="FormsTaskpaneButton.Label"/>
+                  <Supertip>
+                    <Title resid="FormsTaskpaneButton.Label"/>
+                    <Description resid="FormsTaskpaneButton.Tooltip"/>
+                  </Supertip>
+                  <Icon>
+                    <bt:Image size="16" resid="Icon.16x16"/>
+                    <bt:Image size="32" resid="Icon.32x32"/>
+                    <bt:Image size="80" resid="Icon.80x80"/>
+                  </Icon>
+                  <Action xsi:type="ShowTaskpane">
+                    <TaskpaneId>ButtonId1</TaskpaneId>
+                    <SourceLocation resid="FormsTaskpane.Url"/>
+                  </Action>
+                </Control> -->
               </Group>
             </OfficeTab>
           </ExtensionPoint>
@@ -68,15 +84,18 @@
       <bt:Urls>
         <bt:Url id="GetStarted.LearnMoreUrl" DefaultValue="https://go.microsoft.com/fwlink/?LinkId=276812"/>
         <bt:Url id="Taskpane.Url" DefaultValue="https://localhost:3000/taskpane.html"/>
+        <bt:Url id="FormsTaskpane.Url" DefaultValue="https://forms.office.com"/>
       </bt:Urls>
       <bt:ShortStrings>
         <bt:String id="GetStarted.Title" DefaultValue="Get started with your sample add-in!"/>
-        <bt:String id="CommandsGroup.Label" DefaultValue="Google Addons"/>
-        <bt:String id="TaskpaneButton.Label" DefaultValue="Show Google Addons Lab"/>
+        <bt:String id="CommandsGroup.Label" DefaultValue="Sample Addin"/>
+        <bt:String id="TaskpaneButton.Label" DefaultValue="Login Forms"/>
+        <bt:String id="FormsTaskpaneButton.Label" DefaultValue="Login Forms"/>
       </bt:ShortStrings>
       <bt:LongStrings>
         <bt:String id="GetStarted.Description" DefaultValue="Your sample add-in loaded succesfully. Go to the HOME tab and click the 'Show Taskpane' button to get started."/>
         <bt:String id="TaskpaneButton.Tooltip" DefaultValue="Click to Show a Taskpane"/>
+        <bt:String id="FormsTaskpaneButton.Tooltip" DefaultValue="Login Forms"/>
       </bt:LongStrings>
     </Resources>
   </VersionOverrides>

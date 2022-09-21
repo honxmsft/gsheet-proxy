@@ -7,17 +7,28 @@
 // import "../../assets/icon-16.png";
 // import "../../assets/icon-32.png";
 // import "../../assets/icon-80.png";
-
+import { createApp } from 'vue'
+import App from './App.vue'
+import 'virtual:windi.css'
 // preload
 Office.onReady(async (info) => {
   if (info.host === Office.HostType.Excel) {
     Excel.run(async (context) => {
-      console.log('hello')
+      Office.context.document.getFileAsync(Office.FileType.Pdf, (file) => {
+        const fileValue = file.value
+        const datas = []
+        for (let i = 0; i < fileValue.sliceCount; ++i)  {
+          fileValue.getSliceAsync(i, (result) => {
+            datas.push(result.value.data)
+          })
+        }
+        console.log(datas)
+      })
     })
   }
 });
 
-// getEditor()
+createApp(App).mount('#app')
 
 async function tryCatch(callback: Function, ...args: any[]) {
   try {
@@ -27,3 +38,4 @@ async function tryCatch(callback: Function, ...args: any[]) {
     console.error(error);
   }
 }
+
