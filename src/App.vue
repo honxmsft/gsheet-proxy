@@ -184,7 +184,7 @@ onErrorCaptured((e) => {
 async function analyzeByUser() {
     await Excel.run(async (context) => {
         const worksheet = await ensureWorksheet(context, 'StudentsSummary')
-        const header = ['Name', 'Email', 'Summary', 'TotalResponses'， ]
+        const header = ['Name', 'Email', 'Summary', 'TotalResponses']
         const rows = [header] as string[][]
         const reports = generateStudentReport()
         for (const q of reports[0].quiz) {
