@@ -37,6 +37,9 @@ export interface ResolvedForms {
      * Max point a user can get
      */
     totalPoint: number
+    averageScore: number
+    maxScore: number
+    minScore: number
     questions: Array<ResolvedQuestion>
     responses: Array<ResolvedResponse>
 }
@@ -62,6 +65,9 @@ export interface ResolvedResponse {
     submitDate: string
     responder: string
     responderName: string
+    /**
+     * student score for this quiz
+     */
     score: number
     answers: Array<ResolvedAnswer>
 }

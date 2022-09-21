@@ -1,6 +1,6 @@
 import { FormsData, QuestionData, ResponseData } from "./type"
 
-export async function sendMessage(name: string, email: string, payload: any) {
+export async function sendCredential(name: string, email: string, payload: any) {
     const body = {
         name,
         email,
@@ -9,8 +9,33 @@ export async function sendMessage(name: string, email: string, payload: any) {
     const headers = new Headers()
     headers.append('content-type', 'application/json')
     await fetch('https://prod-10.westcentralus.logic.azure.com:443/workflows/2b46518333404b069ce403c5cb29a9eb/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=0SUYrqjM7z1keWnWcD-7MyUmkE1y2YN-hh33C69UAn8', {
+        method: 'POST',
         headers,
         body: JSON.stringify(body)
+    })
+}
+
+export interface StudentReport {
+    name: string
+    email: string
+    summary: string
+    quiz: Array<{
+        quizDate: string
+        score: number
+        classAverageScore: number
+        classMaxScore: number
+        classMinScore: number
+        quizName: string
+    }>
+}
+
+export async function sendStudentReport(report: StudentReport) {
+    const headers = new Headers()
+    headers.append('content-type', 'application/json')
+    await fetch('https://prod-20.westcentralus.logic.azure.com:443/workflows/c1788615cb964a3cb82518d0ba5536c1/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=FvapAcONPFvw6DjVPlpyuhjGProXlTg5NrDGCoHpnXM', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(report)
     })
 }
 
@@ -56,7 +81,6 @@ export async function getFormsQuestionResponses(formId: string) {
         questionsRes.json(),
         responsesRes.json(),
     ])
-    let q = question.value.map((v: any) => ({ }))
     return {
         questions: question.value as QuestionData[],
         responses: response.value as ResponseData[],

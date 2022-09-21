@@ -24,6 +24,31 @@ export async function resolveForms(f: FormsData) {
     for (const q of resolvedQuestions) {
         mapping[q.id] = q
     }
+    const resolvedRes = responses.map((r) => {
+        const answ = JSON.parse(r.answers) as any[]
+        const answers = answ.map((a: any) => {
+            const q = mapping[a.questionId]
+            const answer1 = a.answer1
+            const correct = q.correctAnswer === answer1
+            const result: ResolvedAnswer = {
+                questionId: a.questionId,
+                answer1,
+                correct,
+                score: correct ? q.point : 0,
+            }
+            return result
+        })
+        const result: ResolvedResponse = {
+            id: r.id,
+            startDate: r.startDate,
+            submitDate: r.submitDate,
+            responder: r.responder,
+            responderName: r.responderName,
+            score: answers.reduce((a, b) => a + b.score, 0),
+            answers,
+        }
+        return result
+    })
 
     const result: ResolvedForms = {
         title: f.title,
@@ -31,31 +56,10 @@ export async function resolveForms(f: FormsData) {
         createdDate: f.createdDate,
         questions: resolvedQuestions,
         totalPoint: totalScore,
-        responses: responses.map((r) => {
-            const answ = JSON.parse(r.answers) as any[]
-            const answers = answ.map((a: any) => {
-                const q = mapping[a.questionId]
-                const answer1 = a.answer1
-                const correct = q.correctAnswer === answer1
-                const result: ResolvedAnswer = {
-                    questionId: a.questionId,
-                    answer1,
-                    correct,
-                    score: correct ? q.point : 0,
-                }
-                return result
-            })
-            const result: ResolvedResponse = {
-                id: r.id,
-                startDate: r.startDate,
-                submitDate: r.submitDate,
-                responder: r.responder,
-                responderName: r.responderName,
-                score: answers.reduce((a, b) => a + b.score, 0),
-                answers,
-            }
-            return result
-        })
+        maxScore: resolvedRes.reduce((v, c) => v > c.score ? v : c.score, 0),
+        minScore: resolvedRes.reduce((v, c) => v < c.score ? v : c.score, 0),
+        averageScore: resolvedRes.reduce((v, c) => v + c.score, 0) / resolvedRes.length,
+        responses: resolvedRes
     }
 
     return result
