@@ -40,10 +40,26 @@
             <button class="p-2 text-teal-400 font-semibold hover:(bg-teal-100) transition-all duration-300 "
                 @click="analyzeByQuiz()">Analyze Quiz</button>
             <button class="p-2 text-teal-400 font-semibold hover:(bg-teal-100) transition-all duration-300 "
-                @click="analyzeByUser()">Analyze User</button>
+                @click="analyzeByUser()">Analyze Student Score</button>
+        </div>
+
+
+
+        <div class="flex mb-4 justify-center items-center">
+            <h2 class="text-xl font-bold leading-10">
+                Reports
+            </h2>
+            <div class="flex-grow">
+
+            </div>
+        </div>
+
+
+        <div class="flex flex-col  bg-white">
             <button class="p-2 text-teal-400 font-semibold hover:(bg-teal-100) transition-all duration-300 "
                 @click="getAndSendStudentReport()">Send Report to All Student</button>
         </div>
+
 
         <div v-if="error" class="p-3 text-red-500">
             {{ error }}
@@ -126,7 +142,7 @@ async function getAndSendStudentReport() {
             }
         }
     }).catch(handleError)
-    await Promise.all(reports.filter(r => r.name === 'Hongze Xu').map(sendStudentReport))
+    await Promise.all(reports.filter(r => r.name === 'Hongze Xu' || r.email === 'gingjia@microsoft.com').map(sendStudentReport))
 }
 
 window.onrejectionhandled = (e) => {
@@ -168,7 +184,7 @@ onErrorCaptured((e) => {
 async function analyzeByUser() {
     await Excel.run(async (context) => {
         const worksheet = await ensureWorksheet(context, 'StudentsSummary')
-        const header = ['Name', 'Email', 'Summary']
+        const header = ['Name', 'Email', 'Summary', 'TotalResponses'， ]
         const rows = [header] as string[][]
         const reports = generateStudentReport()
         for (const q of reports[0].quiz) {
@@ -213,6 +229,7 @@ async function analyzeByQuiz() {
 }
 
 function handleError(e: any) {
+    console.error(e)
     error.value = e
 }
 
