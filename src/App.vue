@@ -88,10 +88,12 @@ const { refresh, refreshing } = useRefreshable(async () => {
 onMounted(refresh)
 
 async function generateAll() {
+    resetError()
     await Promise.all(quiz.value.map(generate))
 }
 
 async function generate(resolved: ResolvedForms) {
+    resetError()
     const headerRow = ['Id', 'ResponderName', 'ResponderEmail', 'StartDate', 'SubmitDate', 'TotalScore', 'Score']
     const rows = [headerRow] as string[][]
     const mapping: Record<string, ResolvedQuestion> = {}
@@ -122,13 +124,14 @@ async function generate(resolved: ResolvedForms) {
         const start = worksheet.getRange('A1')
         const end = start.getOffsetRange(rows.length - 1, rows[0].length - 1)
         const range = start.getBoundingRect(end)
-        const table = await ensureTable(context, worksheet.tables, range, `responses-${resolved.id}`)
+        const table = await ensureTable(context, worksheet.tables, range, `responses_${resolved.id}`.substring(0, 20))
         range.values = rows
         await context.sync()
     }).catch(handleError)
 }
 
 async function getAndSendStudentReport() {
+    resetError()
     const reports = generateStudentReport()
     await Excel.run(async (context) => {
         const summary = context.workbook.tables.getItem('StudentSummary')
@@ -182,6 +185,7 @@ onErrorCaptured((e) => {
 })
 
 async function analyzeByUser() {
+    resetError()
     await Excel.run(async (context) => {
         const worksheet = await ensureWorksheet(context, 'StudentsSummary')
         const header = ['Name', 'Email', 'Summary', 'TotalResponses']
@@ -209,6 +213,7 @@ async function analyzeByUser() {
 }
 
 async function analyzeByQuiz() {
+    resetError()
     await Excel.run(async (context) => {
         const worksheet = await ensureWorksheet(context, 'QuizSummary')
         const header = ['Name', 'Date', 'TotalScore', 'AverageScore', 'HighestScore', 'LowestScore']
@@ -226,6 +231,10 @@ async function analyzeByQuiz() {
         await context.sync()
 
     }).catch(handleError)
+}
+
+function resetError() {
+    error.value = undefined
 }
 
 function handleError(e: any) {
