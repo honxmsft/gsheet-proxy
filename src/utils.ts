@@ -32,7 +32,6 @@ export async function ensureTable(tables: Excel.TableCollection, startingCell: E
             const rows = values.slice(1, values.length + 1 - table.rows.items.length).map(v => new Array(table.columns.items.length))
             console.log(rows)
             table.rows.add(0, rows, true)
-            debugger
             await table.context.sync()
         } else if ((table.rows.items.length + 1) > values.length) {
             // need to shrink

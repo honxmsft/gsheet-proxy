@@ -2,7 +2,7 @@
     <div class="p-4">
         <div class="flex mb-4 justify-center items-center">
             <h2 class="text-xl font-bold leading-10">
-                Manage Forms Quiz
+                Import Forms Quiz
             </h2>
             <div class="flex-grow">
             </div>
@@ -29,7 +29,7 @@
 
         <div class="flex mb-4 justify-center items-center">
             <h2 class="text-xl font-bold leading-10">
-                Summarize Data
+                Analyze Forms Quiz
             </h2>
             <div class="flex-grow">
 
@@ -38,16 +38,16 @@
 
         <div class="flex flex-col  bg-white">
             <button class="p-2 text-teal-400 font-semibold hover:(bg-teal-100) transition-all duration-300 "
-                @click="analyzeByQuiz()">Analyze Quiz</button>
+                @click="analyzeByQuiz()">By Quiz</button>
             <button class="p-2 text-teal-400 font-semibold hover:(bg-teal-100) transition-all duration-300 "
-                @click="analyzeByUser()">Analyze Student Score</button>
+                @click="analyzeByUser()">By Students</button>
         </div>
 
 
 
         <div class="flex mb-4 justify-center items-center">
             <h2 class="text-xl font-bold leading-10">
-                Reports
+                Share Quiz Result
             </h2>
             <div class="flex-grow">
 
@@ -57,9 +57,9 @@
 
         <div class="flex flex-col  bg-white">
             <button class="p-2 text-teal-400 font-semibold hover:(bg-teal-100) transition-all duration-300 "
-                @click="getAndSendStudentReport()">Send Report to All Students</button>
+                @click="getAndSendStudentReport()">Send report to each student</button>
             <button class="p-2 text-teal-400 font-semibold hover:(bg-teal-100) transition-all duration-300 "
-                @click="getAndSendStudentReport()">Send Credential to Stendents with A level</button>
+                @click="getAndSendStudentGrading()">Send credential to each stendent with A level</button>
         </div>
 
 
@@ -80,12 +80,12 @@
 </template>
 
 <script lang="ts" setup>
-import { report } from 'process';
 import { onErrorCaptured, onMounted, ref } from 'vue';
-import { getListFormsQuiz, sendStudentReport, StudentReport } from './api';
+import { getListFormsQuiz, sendCredential, sendStudentReport, StudentReport } from './api';
 import { useLocalStorage } from './composables/localStorage';
 import { useRefreshable } from './composables/refreshable';
 import { resolveForms } from './responseResolver';
+import { calculateStudentReport } from './studentReport';
 import { ResolvedForms, ResolvedQuestion } from './type';
 import { ensureTable, ensureWorksheet, normalizeWorksheetName } from './utils'
 
@@ -187,7 +187,7 @@ async function generateV2(resolved: ResolvedForms) {
 
 async function getAndSendStudentReport() {
     resetError()
-    const reports = generateStudentReport()
+    const reports = calculateStudentReport(quiz.value)
     await Excel.run(async (context) => {
         const summary = context.workbook.tables.getItem('StudentSummary')
         summary.load('rows/items,rows/items/length,rows/items/values')
@@ -205,36 +205,18 @@ async function getAndSendStudentReport() {
         .map(sendStudentReport))
 }
 
-window.onrejectionhandled = (e) => {
-    handleError(e.reason)
+async function getAndSendStudentGrading() {
+    resetError()
+    const reports = calculateStudentReport(quiz.value)
+    await Promise.all(reports
+        .filter(r => r.grade.startsWith('A'))
+        .map((r) => {
+            return sendCredential(r.name, r.email, r.grade)
+        }))
 }
 
-function generateStudentReport() {
-    const summarized: Record<string, StudentReport> = {}
-    for (const q of quiz.value) {
-        for (const r of q.responses) {
-            if (!summarized[r.responder]) {
-                summarized[r.responder] = {
-                    name: r.responderName,
-                    email: r.responder,
-                    summary: '',
-                    quiz: [],
-                }
-            }
-            summarized[r.responder].quiz.push({
-                quizName: q.title,
-                quizDate: q.createdDate,
-                score: r.score,
-                classAverageScore: q.averageScore,
-                classMaxScore: q.maxScore,
-                classMinScore: q.minScore,
-            })
-        }
-    }
-    const allReports = Object.values(summarized)
-
-    return allReports
-    // await Promise.all(allReports.map(r => sendStudentReport(r)))
+window.onrejectionhandled = (e) => {
+    handleError(e.reason)
 }
 
 onErrorCaptured((e) => {
@@ -245,14 +227,14 @@ async function analyzeByUser() {
     resetError()
     await Excel.run(async (context) => {
         const worksheet = await ensureWorksheet(context, 'StudentsSummary')
-        const header = ['Name', 'Email', 'Summary']
+        const header = ['Name', 'Email', 'Grade', 'Summary']
         const rows = [header] as string[][]
-        const reports = generateStudentReport()
+        const reports = calculateStudentReport(quiz.value)
         for (const q of reports[0].quiz) {
             header.push(q.quizName)
         }
         for (const r of reports) {
-            const row = [r.name, r.email, r.summary]
+            const row = [r.name, r.email, r.grade, r.summary]
             for (const q of r.quiz) {
                 row.push(q.score.toString())
             }
@@ -260,6 +242,27 @@ async function analyzeByUser() {
         }
 
         const table = await ensureTable(worksheet.tables, worksheet.getRange("A1"), rows, 'StudentSummary')
+
+        const tableRange = table.getRange()
+        tableRange.load('address')
+        await context.sync()
+        const conditionalFormat = tableRange.conditionalFormats.add(Excel.ConditionalFormatType.iconSet);
+        const iconSetCF = conditionalFormat.iconSet;
+        iconSetCF.style = Excel.IconSet.threeTriangles;
+        iconSetCF.criteria = [
+            {} as any,
+            {
+                type: Excel.ConditionalFormatIconRuleType.number,
+                operator: Excel.ConditionalIconCriterionOperator.greaterThanOrEqual,
+                formula: "=PERCENTILE(" + tableRange.address + ",0.25)"
+            },
+            {
+                type: Excel.ConditionalFormatIconRuleType.number,
+                operator: Excel.ConditionalIconCriterionOperator.greaterThanOrEqual,
+                formula: "=PERCENTILE(" + tableRange.address + ",0.75)"
+            }
+        ];
+
         await context.sync()
     }).catch(handleError)
 }

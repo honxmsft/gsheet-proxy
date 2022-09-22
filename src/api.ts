@@ -1,10 +1,10 @@
 import { FormsData, QuestionData, ResponseData } from "./type"
 
-export async function sendCredential(name: string, email: string, payload: any) {
+export async function sendCredential(name: string, email: string, grade: string) {
     const body = {
         name,
         email,
-        ...payload
+        grade,
     }
     const headers = new Headers()
     headers.append('content-type', 'application/json')
@@ -19,8 +19,10 @@ export interface StudentReport {
     name: string
     email: string
     summary: string
+    grade: string
     quiz: Array<{
         quizDate: string
+        totalPoint: number
         score: number
         classAverageScore: number
         classMaxScore: number
