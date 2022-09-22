@@ -2,11 +2,11 @@
 
 ## Getting Started
 
-Authenticate the internal package registry
+<!-- Authenticate the internal package registry
 
 ```bash
 npx vsts-npm-auth -config .npmrc
-```
+``` -->
 
 Install dependencies
 

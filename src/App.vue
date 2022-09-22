@@ -20,7 +20,7 @@
                 </div>
                 <div class="flex-grow"></div>
                 <button class="p-2 text-teal-400 font-semibold hover:(bg-teal-100) transition-all duration-300 "
-                    @click="generate(q)">Import</button>
+                    @click="generateV2(q)">Import</button>
             </div>
 
             <button class="p-2 text-teal-400 font-semibold hover:(bg-teal-100) transition-all duration-300 "
@@ -57,12 +57,24 @@
 
         <div class="flex flex-col  bg-white">
             <button class="p-2 text-teal-400 font-semibold hover:(bg-teal-100) transition-all duration-300 "
-                @click="getAndSendStudentReport()">Send Report to All Student</button>
+                @click="getAndSendStudentReport()">Send Report to All Students</button>
+            <button class="p-2 text-teal-400 font-semibold hover:(bg-teal-100) transition-all duration-300 "
+                @click="getAndSendStudentReport()">Send Credential to Stendents with A level</button>
         </div>
 
 
         <div v-if="error" class="p-3 text-red-500">
             {{ error }}
+            <div v-if="'debugInfo' in error">
+                <div class="font-bold leading-10">
+                    {{error.debugInfo.errorLocation}}
+                </div>
+                <div class="pl-3">
+                    <div v-for="s of error.debugInfo.surroundingStatements" :key="s">
+                        {{s}}
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </template>
@@ -122,13 +134,56 @@ async function generate(resolved: ResolvedForms) {
     await Excel.run(async (context) => {
         const worksheet = await ensureWorksheet(context, name)
         const start = worksheet.getRange('A1')
-        const end = start.getOffsetRange(rows.length - 1, rows[0].length - 1)
-        const range = start.getBoundingRect(end)
-        const table = await ensureTable(context, worksheet.tables, range, `responses_${resolved.id}`.substring(0, 20))
-        range.values = rows
+        const table = await ensureTable(worksheet.tables, start, rows, resolved.id)
         await context.sync()
     }).catch(handleError)
 }
+
+
+async function generateV2(resolved: ResolvedForms) {
+    resetError()
+
+    const mapping: Record<string, ResolvedQuestion> = {}
+    for (const q of resolved.questions) {
+        mapping[q.id] = q
+    }
+    const name = normalizeWorksheetName(`${resolved.title}-${resolved.id}`)
+
+    const summarizedTableRows = [
+        ['Id', 'ResponderName', 'ResponderEmail', 'StartDate', 'SubmitDate', 'TotalScore', 'Score'],
+        ...resolved.responses.map(r => [r.id, r.responder, r.responderName, r.startDate, r.submitDate, resolved.totalPoint.toString(), r.score.toString()])
+    ] as string[][]
+
+    await Excel.run(async (context) => {
+        const worksheet = await ensureWorksheet(context, name)
+        const start = worksheet.getRange('A1')
+        const summerizedTable = await ensureTable(worksheet.tables, start, summarizedTableRows, resolved.id)
+
+        let rows: (string | number)[][] = []
+
+        for (const r of resolved.responses) {
+            for (const a of r.answers) {
+                const row = [] as (string | number)[]
+                const q = mapping[a.questionId]
+                row.push(q.order, q.title, q.correctAnswer, r.responderName, a.answer1, a.correct + '', q.point, a.score)
+                rows.push(row)
+            }
+        }
+
+        rows.sort((a, b) => (a[0] as number) - (b[0] as number))
+        rows = rows.map(r => r.slice(1))
+
+        console.log(rows)
+
+        await ensureTable(worksheet.tables, summerizedTable.getRange().getLastColumn().getOffsetRange(0, 2), [
+            ['Question', 'CorrectAnswer', 'Responder', 'Response', 'Correct', 'Score', 'GotScore'],
+            ...rows
+        ], `Question_${resolved.id}`)
+
+        await context.sync()
+    }).catch(handleError)
+}
+
 
 async function getAndSendStudentReport() {
     resetError()
@@ -145,7 +200,9 @@ async function getAndSendStudentReport() {
             }
         }
     }).catch(handleError)
-    await Promise.all(reports.filter(r => r.name === 'Hongze Xu' || r.email === 'gingjia@microsoft.com').map(sendStudentReport))
+    await Promise.all(reports
+        // .filter(r => r.name === 'Hongze Xu' || r.email === 'gingjia@microsoft.com')
+        .map(sendStudentReport))
 }
 
 window.onrejectionhandled = (e) => {
@@ -188,7 +245,7 @@ async function analyzeByUser() {
     resetError()
     await Excel.run(async (context) => {
         const worksheet = await ensureWorksheet(context, 'StudentsSummary')
-        const header = ['Name', 'Email', 'Summary', 'TotalResponses']
+        const header = ['Name', 'Email', 'Summary']
         const rows = [header] as string[][]
         const reports = generateStudentReport()
         for (const q of reports[0].quiz) {
@@ -202,12 +259,7 @@ async function analyzeByUser() {
             rows.push(row)
         }
 
-        const start = worksheet.getRange('A1')
-        const end = start.getOffsetRange(rows.length - 1, rows[0].length - 1)
-        const range = start.getBoundingRect(end)
-
-        const table = await ensureTable(context, worksheet.tables, range, 'StudentSummary')
-        range.values = rows
+        const table = await ensureTable(worksheet.tables, worksheet.getRange("A1"), rows, 'StudentSummary')
         await context.sync()
     }).catch(handleError)
 }
@@ -223,11 +275,7 @@ async function analyzeByQuiz() {
         }
 
         const start = worksheet.getRange('A1')
-        const end = start.getOffsetRange(rows.length - 1, rows[0].length - 1)
-        const range = start.getBoundingRect(end)
-
-        const table = await ensureTable(context, worksheet.tables, range, 'QuizSummary')
-        range.values = rows
+        const table = await ensureTable(worksheet.tables, start, rows, 'QuizSummary')
         await context.sync()
 
     }).catch(handleError)
