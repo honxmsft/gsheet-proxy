@@ -188,7 +188,7 @@ async function analyzeByUser() {
     resetError()
     await Excel.run(async (context) => {
         const worksheet = await ensureWorksheet(context, 'StudentsSummary')
-        const header = ['Name', 'Email', 'Summary', 'TotalResponses']
+        const header = ['Name', 'Email', 'Summary']//, 'TotalResponses']
         const rows = [header] as string[][]
         const reports = generateStudentReport()
         for (const q of reports[0].quiz) {
@@ -209,6 +209,23 @@ async function analyzeByUser() {
         const table = await ensureTable(context, worksheet.tables, range, 'StudentSummary')
         range.values = rows
         await context.sync()
+
+        const conditionalFormat = range.conditionalFormats.add(Excel.ConditionalFormatType.iconSet)
+        const iconSetCF = conditionalFormat.iconSet
+        iconSetCF.style = Excel.IconSet.threeTriangles
+        iconSetCF.criteria = [
+        {} as any,
+        {
+        type: Excel.ConditionalFormatIconRuleType.number,
+        operator: Excel.ConditionalIconCriterionOperator.greaterThanOrEqual,
+        formula: "=PERCENTILE("+ range +",0.25)"
+         },
+        {
+        type: Excel.ConditionalFormatIconRuleType.number,
+        operator: Excel.ConditionalIconCriterionOperator.greaterThanOrEqual,
+        formula: "=PERCENTILE("+ range +",0.75)"
+        }]
+        await context.sync()
     }).catch(handleError)
 }
 
@@ -228,6 +245,17 @@ async function analyzeByQuiz() {
 
         const table = await ensureTable(context, worksheet.tables, range, 'QuizSummary')
         range.values = rows
+        await context.sync()
+
+        const start1 = worksheet.getRange('D1')
+        const end1 = start1.getOffsetRange(rows.length - 1, rows[0].length - 1)
+        const dataRange = start.getBoundingRect(end)
+        let chart = worksheet.charts.add(Excel.ChartType.line, dataRange, "Auto");
+        chart.title.text = "Quiz Summary"
+        chart.legend.position = "Bottom"
+        chart.legend.format.fill.setSolidColor("white")
+        chart.dataLabels.format.font.size = 15
+        chart.dataLabels.format.font.color = "black"
         await context.sync()
 
     }).catch(handleError)
