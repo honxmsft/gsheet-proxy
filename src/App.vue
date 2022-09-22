@@ -2,7 +2,7 @@
     <div class="p-4">
         <div class="flex mb-4 justify-center items-center">
             <h2 class="text-xl font-bold leading-10">
-                Manage Forms Quiz
+                Import Forms Quiz
             </h2>
             <div class="flex-grow">
             </div>
@@ -29,7 +29,7 @@
 
         <div class="flex mb-4 justify-center items-center">
             <h2 class="text-xl font-bold leading-10">
-                Summarize Data
+                Analyze Forms Quiz
             </h2>
             <div class="flex-grow">
 
@@ -38,16 +38,16 @@
 
         <div class="flex flex-col  bg-white">
             <button class="p-2 text-teal-400 font-semibold hover:(bg-teal-100) transition-all duration-300 "
-                @click="analyzeByQuiz()">Analyze Quiz</button>
+                @click="analyzeByQuiz()">By Quiz</button>
             <button class="p-2 text-teal-400 font-semibold hover:(bg-teal-100) transition-all duration-300 "
-                @click="analyzeByUser()">Analyze Student Score</button>
+                @click="analyzeByUser()">By Students</button>
         </div>
 
 
 
         <div class="flex mb-4 justify-center items-center">
             <h2 class="text-xl font-bold leading-10">
-                Reports
+                Share Quiz Result
             </h2>
             <div class="flex-grow">
 
@@ -57,7 +57,7 @@
 
         <div class="flex flex-col  bg-white">
             <button class="p-2 text-teal-400 font-semibold hover:(bg-teal-100) transition-all duration-300 "
-                @click="getAndSendStudentReport()">Send Report to All Student</button>
+                @click="getAndSendStudentReport()">Send report to each student</button>
         </div>
 
 
@@ -251,6 +251,7 @@ async function analyzeByQuiz() {
         const end1 = start1.getOffsetRange(rows.length - 1, rows[0].length - 1)
         const dataRange = start.getBoundingRect(end)
         let chart = worksheet.charts.add(Excel.ChartType.line, dataRange, "Auto");
+        chart.setPosition("J1")//, "M15");
         chart.title.text = "Quiz Summary"
         chart.legend.position = "Bottom"
         chart.legend.format.fill.setSolidColor("white")
