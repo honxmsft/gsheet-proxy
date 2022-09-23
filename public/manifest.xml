@@ -4,8 +4,8 @@
   <Version>1.0.0.0</Version>
   <ProviderName>Contoso</ProviderName>
   <DefaultLocale>en-US</DefaultLocale>
-  <DisplayName DefaultValue="Forms Pond"/>
-  <Description DefaultValue="Forms Pond"/>
+  <DisplayName DefaultValue="QuizPond"/>
+  <Description DefaultValue="QuizPond"/>
   <IconUrl DefaultValue="https://localhost:3000/assets/icon-32.png"/>
   <HighResolutionIconUrl DefaultValue="https://localhost:3000/assets/icon-64.png"/>
   <SupportUrl DefaultValue="https://www.contoso.com/help"/>
@@ -88,14 +88,14 @@
       </bt:Urls>
       <bt:ShortStrings>
         <bt:String id="GetStarted.Title" DefaultValue="Get started with your sample add-in!"/>
-        <bt:String id="CommandsGroup.Label" DefaultValue="Quiz!"/>
-        <bt:String id="TaskpaneButton.Label" DefaultValue="Quiz!"/>
-        <bt:String id="FormsTaskpaneButton.Label" DefaultValue="Quiz!"/>
+        <bt:String id="CommandsGroup.Label" DefaultValue="QuizPond"/>
+        <bt:String id="TaskpaneButton.Label" DefaultValue="QuizPond"/>
+        <bt:String id="FormsTaskpaneButton.Label" DefaultValue="QuizPond"/>
       </bt:ShortStrings>
       <bt:LongStrings>
         <bt:String id="GetStarted.Description" DefaultValue="Your sample add-in loaded succesfully. Go to the HOME tab and click the 'Show Taskpane' button to get started."/>
         <bt:String id="TaskpaneButton.Tooltip" DefaultValue="Click to Show a Taskpane"/>
-        <bt:String id="FormsTaskpaneButton.Tooltip" DefaultValue="Quiz!"/>
+        <bt:String id="FormsTaskpaneButton.Tooltip" DefaultValue="QuizPond"/>
       </bt:LongStrings>
     </Resources>
   </VersionOverrides>
