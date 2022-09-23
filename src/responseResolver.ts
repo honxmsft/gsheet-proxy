@@ -7,8 +7,9 @@ export async function resolveForms(f: FormsData) {
     const resolvedQuestions = questions.map((q) => {
         const info = JSON.parse(q.questionInfo)
         const point = info.Point ?? 0
-        const grading = info.GradingBasis ? JSON.parse(info.GradingBasis) : [{ answer: '' }]
-        const expectAnswer = grading[0].answer ?? ''
+        const grading = info.GradingBasis ? JSON.parse(info.GradingBasis) : []
+        const correctChoice = info.Choices?.find((c: any) => c.IsAnswerKey)?.Description
+        const expectAnswer = grading[0]?.answer ?? correctChoice ?? ''
         const resolved: ResolvedQuestion = {
             id: q.id,
             title: q.title,

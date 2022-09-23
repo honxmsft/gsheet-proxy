@@ -27,6 +27,7 @@ export interface StudentReport {
         classAverageScore: number
         classMaxScore: number
         classMinScore: number
+        quizId: string
         quizName: string
     }>
 }
@@ -64,7 +65,6 @@ export async function getListFormsQuiz() {
     const response = await fetch('/formapi/api/forms')
     if (!response.ok) throw new Error('Fail to auth')
     const { value }: { value: FormsData[] } = await response.json()
-    console.log(value)
 
     const allQuizs = value.filter(v => v.type === 'quiz')
 

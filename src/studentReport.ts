@@ -22,6 +22,7 @@ export function calculateStudentReport(quiz: ResolvedForms[]): StudentReport[] {
                 classAverageScore: q.averageScore,
                 classMaxScore: q.maxScore,
                 classMinScore: q.minScore,
+                quizId: q.id,
             })
         }
     }

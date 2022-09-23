@@ -193,7 +193,7 @@ async function getAndSendStudentReport() {
         summary.load('rows/items,rows/items/length,rows/items/values')
         await context.sync()
         for (const r of summary.rows.items) {
-            const summary = r.values[0][2]
+            const summary = r.values[0][3]
             const student = reports.find(student => r.values[0][0] === student.name && r.values[0][1] === student.email)
             if (student) {
                 student.summary = summary ?? ''
@@ -209,7 +209,7 @@ async function getAndSendStudentGrading() {
     resetError()
     const reports = calculateStudentReport(quiz.value)
     await Promise.all(reports
-        .filter(r => r.grade.startsWith('A'))
+        .filter(r => r.grade.startsWith('A') || r.grade.startsWith('B'))
         .map((r) => {
             return sendCredential(r.name, r.email, r.grade)
         }))
@@ -227,19 +227,22 @@ async function analyzeByUser() {
     resetError()
     await Excel.run(async (context) => {
         const worksheet = await ensureWorksheet(context, 'StudentsSummary')
-        const header = ['Name', 'Email', 'Grade', 'Summary']
-        const rows = [header] as string[][]
+        worksheet.tabColor = '#F9BF00'
+        const header = ['Name', 'Email', 'Grade', 'Summary'] as (string | number)[]
+        const rows = [header] as (string | number)[][]
         const reports = calculateStudentReport(quiz.value)
-        for (const q of reports[0].quiz) {
-            header.push(q.quizName)
+        for (const q of quiz.value) {
+            header.push(q.title)
         }
         for (const r of reports) {
-            const row = [r.name, r.email, r.grade, r.summary]
-            for (const q of r.quiz) {
-                row.push(q.score.toString())
+            const row = [r.name, r.email, r.grade, r.summary] as (string | number)[]
+            for (const q of quiz.value) {
+                row.push(r.quiz.find(res => res.quizId === q.id)?.score ?? 0)
             }
             rows.push(row)
         }
+
+        console.log(rows)
 
         const table = await ensureTable(worksheet.tables, worksheet.getRange("A1"), rows, 'StudentSummary')
 
@@ -271,6 +274,7 @@ async function analyzeByQuiz() {
     resetError()
     await Excel.run(async (context) => {
         const worksheet = await ensureWorksheet(context, 'QuizSummary')
+        worksheet.tabColor = '#F9BF00'
         const header = ['Name', 'Date', 'TotalScore', 'AverageScore', 'HighestScore', 'LowestScore']
         const rows = [header] as (string | number)[][]
         for (const q of quiz.value) {
@@ -279,6 +283,18 @@ async function analyzeByQuiz() {
 
         const start = worksheet.getRange('A1')
         const table = await ensureTable(worksheet.tables, start, rows, 'QuizSummary')
+        await context.sync()
+
+        const dataRange = start.getBoundingRect(table.getRange())
+        let chart = worksheet.charts.add(Excel.ChartType.line, dataRange, "Auto");
+        const chartStart = table.getRange().getLastColumn().getOffsetRange(0, 2)
+        const chartEnd = chartStart.getAbsoluteResizedRange(20, 11)
+        chart.setPosition(chartStart, chartEnd)//, "M15");
+        chart.title.text = "Quiz Summary"
+        chart.legend.position = "Bottom"
+        chart.legend.format.fill.setSolidColor("white")
+        chart.dataLabels.format.font.size = 15
+        chart.dataLabels.format.font.color = "black"
         await context.sync()
 
     }).catch(handleError)
