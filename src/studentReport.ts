@@ -44,6 +44,26 @@ export function calculateStudentReport(quiz: ResolvedForms[]): StudentReport[] {
             grade = 'F'
         }
         r.grade = grade
+
+        switch (grade) {
+            case "A":
+                r.summary = "Great job, keep it!";
+                break;
+            case "B":
+                r.summary = "Good job, can be better!";
+                break;
+            case "C":
+                r.summary = "Have big improve space!";
+                break;
+            case "D":
+                r.summary = "You need to put more effort on it!";
+                break;
+            case "F":
+                r.summary = "Let's have a talk if needed.";
+                break;
+            default:
+                break;
+        }
     }
     return allReports
 }

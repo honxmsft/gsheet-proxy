@@ -56,10 +56,37 @@
 
 
         <div class="flex flex-col  bg-white">
-            <button class="p-2 text-teal-400 font-semibold hover:(bg-teal-100) transition-all duration-300 "
-                @click="getAndSendStudentReport()">Send report to each student</button>
-            <button class="p-2 text-teal-400 font-semibold hover:(bg-teal-100) transition-all duration-300 "
-                @click="getAndSendStudentGrading()">Send credential to each stendent with A level</button>
+            <button
+                class="p-2 text-teal-400 font-semibold hover:(bg-teal-100) transition-all duration-300 flex items-center justify-center"
+                @click="getAndSendStudentReport()">
+                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-green"
+                    :class="{'hidden': !gettingAndSendStudentReport}" xmlns="http://www.w3.org/2000/svg" fill="none"
+                    viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                    </path>
+                </svg>
+                <template v-if="sentReport">
+                    ✔️
+                </template>
+                Send report to each student
+            </button>
+            <button class="p-2 text-teal-400 font-semibold hover:(bg-teal-100) transition-all duration-300 flex items-center justify-center"
+                @click="getAndSendStudentGrading()">
+                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-green"
+                    :class="{'hidden': !gettingAndSendStudentGrading}" xmlns="http://www.w3.org/2000/svg" fill="none"
+                    viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                    </path>
+                </svg>
+                <template v-if="sentCertificate">
+                    ✔️
+                </template>
+                Send credential to each stendent with A level
+            </button>
         </div>
 
 
@@ -81,7 +108,7 @@
 
 <script lang="ts" setup>
 import { onErrorCaptured, onMounted, ref } from 'vue';
-import { getListFormsQuiz, sendCredential, sendStudentReport, StudentReport } from './api';
+import { getListFormsQuiz, sendCredential as sendCertificate, sendStudentReport, StudentReport } from './api';
 import { useLocalStorage } from './composables/localStorage';
 import { useRefreshable } from './composables/refreshable';
 import { resolveForms } from './responseResolver';
@@ -91,6 +118,8 @@ import { ensureTable, ensureWorksheet, normalizeWorksheetName } from './utils'
 
 const error = ref(undefined as undefined | Error)
 const quiz = useLocalStorage<ResolvedForms[]>('quiz', () => [] as ResolvedForms[], JSON.stringify, JSON.parse)
+const sentReport = ref(false)
+const sentCertificate = ref(false)
 
 const { refresh, refreshing } = useRefreshable(async () => {
     const forms = await getListFormsQuiz()
@@ -101,44 +130,8 @@ onMounted(refresh)
 
 async function generateAll() {
     resetError()
-    await Promise.all(quiz.value.map(generate))
+    await Promise.all(quiz.value.map(generateV2))
 }
-
-async function generate(resolved: ResolvedForms) {
-    resetError()
-    const headerRow = ['Id', 'ResponderName', 'ResponderEmail', 'StartDate', 'SubmitDate', 'TotalScore', 'Score']
-    const rows = [headerRow] as string[][]
-    const mapping: Record<string, ResolvedQuestion> = {}
-    for (const q of resolved.questions) {
-        mapping[q.id] = q
-        headerRow.push(q.title)
-        headerRow.push(`Correct - ${q.title}`)
-        headerRow.push(`Correct Answer - ${q.title}`)
-    }
-
-    for (const r of resolved.responses) {
-        const questions = [] as string[]
-        for (const ans of r.answers) {
-            const q = mapping[ans.questionId]
-
-            const userAnswer = ans.answer1
-            const correct = ans.correct
-            const correctAnswer = q.correctAnswer
-
-            questions.push(userAnswer, correct + '', correctAnswer)
-        }
-        rows.push([r.id, r.responder, r.responderName, r.startDate, r.submitDate, resolved.totalPoint.toString(), r.score.toString(), ...questions])
-    }
-    const name = normalizeWorksheetName(`${resolved.title}-${resolved.id}`)
-
-    await Excel.run(async (context) => {
-        const worksheet = await ensureWorksheet(context, name)
-        const start = worksheet.getRange('A1')
-        const table = await ensureTable(worksheet.tables, start, rows, resolved.id)
-        await context.sync()
-    }).catch(handleError)
-}
-
 
 async function generateV2(resolved: ResolvedForms) {
     resetError()
@@ -184,8 +177,7 @@ async function generateV2(resolved: ResolvedForms) {
     }).catch(handleError)
 }
 
-
-async function getAndSendStudentReport() {
+const { refresh: getAndSendStudentReport, refreshing: gettingAndSendStudentReport } = useRefreshable(async function getAndSendStudentReport() {
     resetError()
     const reports = calculateStudentReport(quiz.value)
     await Excel.run(async (context) => {
@@ -200,20 +192,34 @@ async function getAndSendStudentReport() {
             }
         }
     }).catch(handleError)
-    await Promise.all(reports
+    if (false) {
+        await new Promise((resolve) => {
+            setTimeout(resolve, 1000)
+        })
+    } else {
+        await Promise.all(reports
         // .filter(r => r.name === 'Hongze Xu' || r.email === 'gingjia@microsoft.com')
         .map(sendStudentReport))
-}
+    }
+    sentReport.value = true
+})
 
-async function getAndSendStudentGrading() {
+const { refresh: getAndSendStudentGrading, refreshing: gettingAndSendStudentGrading } = useRefreshable(async () => {
     resetError()
     const reports = calculateStudentReport(quiz.value)
-    await Promise.all(reports
+    if (false) {
+        await new Promise((resolve) => {
+            setTimeout(resolve, 1000)
+        })
+    } else {
+        await Promise.all(reports
         .filter(r => r.grade.startsWith('A') || r.grade.startsWith('B'))
         .map((r) => {
-            return sendCredential(r.name, r.email, r.grade)
+            return sendCertificate(r.name, r.email, r.grade)
         }))
-}
+    }
+    sentCertificate.value = true
+})
 
 window.onrejectionhandled = (e) => {
     handleError(e.reason)
@@ -237,7 +243,7 @@ async function analyzeByUser() {
         for (const r of reports) {
             const row = [r.name, r.email, r.grade, r.summary] as (string | number)[]
             for (const q of quiz.value) {
-                row.push(r.quiz.find(res => res.quizId === q.id)?.score ?? 0)
+                row.push(r.quiz.find(res => res.quizId === q.id)?.score ?? 'Not Attend')
             }
             rows.push(row)
         }
@@ -265,6 +271,9 @@ async function analyzeByUser() {
                 formula: "=PERCENTILE(" + tableRange.address + ",0.75)"
             }
         ];
+
+        // const conditionalFormatColor = tableRange.conditionalFormats.add(Excel.ConditionalFormatType.custom);
+        // conditionalFormatColor.colorScale.threeColorScale
 
         await context.sync()
     }).catch(handleError)
